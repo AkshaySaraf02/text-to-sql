@@ -1,0 +1,21 @@
+[
+
+	{
+	"kpi_name": "ATV or Average Transaction Value",
+	"calculation": "Sum of the bill amount divided by total number of unique bills made.",
+	"context": "This shows the average transaction value, that is the average amount spent on a bill."
+		},
+
+	{
+	"kpi_name": "ABS or Average Basket Size",
+	"calculation": "Sum of line_item_quantity divided by total unique bills.",
+	"context": "This shows the average line item_quantity bought in the bills, that is the average number of items bought in the bills."
+		},
+
+	{
+	"kpi_name": "Total/Sum of sales/Revenue",
+	"calculation": "Sum of bill_amount divided by total unique bills.",
+	"context": "This shows the total sales or revenue generated."
+		},
+
+]

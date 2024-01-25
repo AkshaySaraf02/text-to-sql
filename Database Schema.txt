@@ -1,0 +1,26 @@
+[
+	{
+	"table_name": "users",
+	"columns": ["user_id", "slab_name", "mobile"],
+	"context": "Contains user's or customer's personal information, each row is a unique customer."
+		},
+
+	{
+	"table_name": "bill_summary",
+	"columns": ["dim_event_user_id", "bill_id", "bill_amount", "line_item_quantity", "dim_event_date_id"],
+	"context": "Contains all bills information, each row is a unique bill i.e it is bill level data. There can be a multiple bills of a single user."
+		},
+
+	{
+	"table_name": "date",
+	"columns": ["date_id", "month", "year", "quarter", "date"],
+	"context": "contains each date_id's detailed information. each row is a unique date. date_id is just identifier to join tables and not a date. join this table and use date column to solve queries regarding dates."
+		},
+
+	{
+	"table_name": "inventory_items",
+	"columns": ["item_code", "category"],
+	"context": "contains information about each line item or products available in the brand."
+		}
+
+]

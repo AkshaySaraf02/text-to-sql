@@ -1,0 +1,5 @@
+	{
+	"table_name": "bill_lineitems",
+	"columns": ["dim_event_user_id", "bill_id", "bill_amount", "item_code", "dim_event_date_id", "line_item_amount", "quantity"],
+	"context": "Contains each single bill's detailed information, each row is a unique line item, there can be multiple line items for single bill leading to multiple rows i.e it is line 			item level data. There can be a multiple instance of a single bill. Sales might be duplicated when summed, not recommended for sales data."
+		},
