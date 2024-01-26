@@ -38,9 +38,11 @@ def cosine_similarity_score(prompt_text, context_text):
     prompt_text, context_text = nlpTextProcessor(prompt_text), nlpTextProcessor(context_text)
     text_vectors = vectorizer.fit_transform([prompt_text, context_text])
     similarity_score = cosine_similarity(text_vectors)
-    print(f"Cosine Similarity: {similarity_score[0,1]*100}%")
     return similarity_score[0, 1]*100
 
+
+
+# Testing the functions
 
 # prompt = "slab wise sales of customer split by their and also give their mobile "
 # context = """	
