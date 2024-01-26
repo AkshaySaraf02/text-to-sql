@@ -18,4 +18,10 @@
 	"context": "This shows the total sales or revenue generated."
 		},
 
+	{
+	"kpi_name": "Category Penetration",
+	"calculation": "count of distinct category of products purchased till now.",
+	"context": "This shows the count of unique products a user has purchased till now. first calculated on user level only then is averaged."
+		},
+
 ]

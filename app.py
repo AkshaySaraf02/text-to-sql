@@ -35,21 +35,27 @@ if db_schema and kpis and query != "":
     db_schema = text_extraction(db_schema)
     kpis = text_extraction(kpis)
     if submit:
-        completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "system", "content": f"""
         
-            You are SQL Expert, based on the database schema info and KPI information from user generate a sql query.
-            Understand the context given for each schema and KPI before calculating to better understand the requirement It is not necessary to use all the tables, only use the ones you think are required. Any column you dont recognize you must for sure understand from KPI info given below and calculate based on that only.
-            Don't give any explanation unless asked, just output the query. Ask if theres any doubt, don't output wrong info. 
+
+
+
+
+
+        # completion = client.chat.completions.create(
+        # model="gpt-3.5-turbo",
+        # messages=[{"role": "system", "content": f"""
+        
+        #     You are SQL Expert, based on the database schema info and KPI information from user generate a sql query.
+        #     Understand the context given for each schema and KPI before calculating to better understand the requirement It is not necessary to use all the tables, only use the ones you think are required. Any column you dont recognize you must for sure understand from KPI info given below and calculate based on that only.
+        #     Don't give any explanation unless asked, just output the query. Ask if theres any doubt, don't output wrong info. 
             
-            Note: Below given information/context is in the form of list of dictionaries.
+        #     Note: Below given information/context is in the form of list of dictionaries.
 
-                    Database schema: [{db_schema}],
-                    KPIs data: {kpis}
+        #             Database schema: [{db_schema}],
+        #             KPIs data: {kpis}
 
-                """},
-        {"role": "user", "content": f"{query}"}])
+        #         """},
+        # {"role": "user", "content": f"{query}"}])
         
-        st.subheader("Query: ")
-        st.code(completion.choices[0].message.content, language="sql")
+        # st.subheader("Query: ")
+        # st.code(completion.choices[0].message.content, language="sql")
