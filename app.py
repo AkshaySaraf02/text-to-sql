@@ -42,15 +42,15 @@ if db_schema and kpis and query != "":
         required_dbs = []   
         dbs = eval(db_schema)
         for db in dbs:
-            print(db["table_name"] + " " + f"{cosine_similarity_score(query, str(db))}")
-            if cosine_similarity_score(prompt_text=query , context_text=str(str(db).split())) > 0:
+            print(db["table_name"] + f" {cosine_similarity_score(query, str(db))}")
+            if cosine_similarity_score(prompt_text=query , context_text=str(db)) > 0:
                 required_dbs.append(db)
 
         required_db_table_names = [d.get(list(d.keys())[0]) for d in required_dbs]
 
         st.subheader("Needed tables using Cosine Similarity")
-        for db in required_dbs:
-            st.write(db["table_name"])
+        for i, db in enumerate(required_dbs):
+            st.write(i+1,". ", db["table_name"])
 
         relevant_tables = [db for db in dbs if db["table_name"] in required_db_table_names]
         formatted_tables = ",\n".join([str(table) for table in relevant_tables])
