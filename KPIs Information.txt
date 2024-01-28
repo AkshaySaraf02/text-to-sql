@@ -14,7 +14,7 @@
 
 	{
 	"kpi_name": "Total/Sum of sales/Revenue",
-	"calculation": "Sum of bill_amount divided by total unique bills.",
+	"calculation": "Sum of bill_amount, if we're talking about total transactional sales; Sum of line_item_amount if we're talking about total product category sales.",
 	"context": "This shows the total sales or revenue generated."
 		},
 
