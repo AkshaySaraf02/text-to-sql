@@ -1,14 +1,17 @@
 import streamlit as st
+import pdb
 from cosine_similarity import cosine_similarity_score
 import PyPDF2 as pdf
 from openai import OpenAI
 from config import OPEN_AI_API_KEY
+
 
 client = OpenAI(api_key=OPEN_AI_API_KEY)
 
 def text_extraction(file):
     text = ""
     if file.name.split(".")[-1] == "pdf":
+        # pdb.set_trace()
         raw_text = pdf.PdfReader(file)
         for page in range(len(raw_text.pages)):
             page = raw_text.pages[page]
@@ -17,7 +20,7 @@ def text_extraction(file):
     else:
         for line in file:
             text += str(line).replace("\\r\\n", " ").replace("\\t", "   ").replace("b'", "").replace("'", '')
-        return text.replace("b'", "")
+        return text
 
 
 st.title("Text to SQL 🤖")
@@ -39,13 +42,19 @@ if db_schema and kpis and query != "":
         required_dbs = []   
         dbs = eval(db_schema)
         for db in dbs:
-            print(db["table_name"] + f"{cosine_similarity_score(query, str(db))}")
+            print(db["table_name"] + " " + f"{cosine_similarity_score(query, str(db))}")
             if cosine_similarity_score(prompt_text=query , context_text=str(str(db).split())) > 0:
                 required_dbs.append(db)
+
+        required_db_table_names = [d.get(list(d.keys())[0]) for d in required_dbs]
 
         st.subheader("Needed tables using Cosine Similarity")
         for db in required_dbs:
             st.write(db["table_name"])
+
+        relevant_tables = [db for db in dbs if db["table_name"] in required_db_table_names]
+        formatted_tables = ",\n".join([str(table) for table in relevant_tables])
+
 
         completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -58,11 +67,31 @@ if db_schema and kpis and query != "":
         
         Note: Below given information/context is in the form of list of dictionaries.
 
-                Database schema: [{db_schema}],
+                Database schema: [{formatted_tables}],
                 KPIs data: {kpis}
 
             """},
     {"role": "user", "content": f"{query}"}])
         
+
+        with st.expander("See Complete Query"):
+            st.subheader("Original Final Prompt:")
+            st.json({
+                "user_query": query,
+                "system_prompt": f"""
+                    You are an SQL Expert. Based on the identified relevant tables from the database schema and KPI information from the user, generate a SQL query.
+                    Understand the context given for each table before calculating to better understand the requirement.
+                    It is not necessary to use all the tables; only use the ones identified through cosine similarity.
+
+                    Note: Below given information/context is in the form of a list of dictionaries.
+
+                    Database schema: [{formatted_tables}],
+                    KPIs data: {kpis}
+                """,
+                "database_schema": relevant_tables,
+                "kpis_data": kpis
+            })
+
+
         st.subheader("Query: ")
         st.code(completion.choices[0].message.content, language="sql")

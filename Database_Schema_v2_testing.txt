@@ -1,0 +1,22 @@
+[
+  {
+    "table_name": "users",
+    "columns": ["user_id", "slab_name", "mobile"],
+    "context": "Contains unique customer data, including user ID, slab name, and mobile number. Each row represents a distinct customer."
+  },
+  {
+    "table_name": "bill_summary",
+    "columns": ["dim_event_user_id", "bill_id", "bill_amount", "line_item_quantity", "dim_event_date_id"],
+    "context": "Stores sales and billing information. Each row corresponds to a unique bill, with details such as user ID, bill ID, amount, line item quantity, and date ID for reference."
+  },
+  {
+    "table_name": "date",
+    "columns": ["date_id", "month", "year", "quarter", "date"],
+    "context": "Contains detailed information for each date, including date ID, month, year, quarter, and the date itself. Useful for solving queries related to dates by joining with other tables."
+  },
+  {
+    "table_name": "inventory_items",
+    "columns": ["item_code", "category"],
+    "context": "Stores information about each inventory item or product, such as item code and category. Helpful for understanding the products available in the brand."
+  }
+]

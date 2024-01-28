@@ -3,8 +3,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+import nltk
 
-
+nltk.download('stopwords')
+nltk.download('punkt')
+nltk.download('wordnet')
 stopWords = set(stopwords.words("english"))
 
 lemmatizer = WordNetLemmatizer()
