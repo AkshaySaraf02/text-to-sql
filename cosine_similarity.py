@@ -19,7 +19,7 @@ def nlpTextProcessor(sentence : str):
              punctuation and extra characters filtered out, and words lemmatized.
     """
     tokenizedSent = word_tokenize(sentence)
-    removedStopwords = [word for word in tokenizedSent if word not in stopWords]
+    removedStopwords = [word.replace("_", " ").replace("/", " ") for word in tokenizedSent if word not in stopWords]
     finalOutput = []
     tempOutput = []
     for word in removedStopwords:
@@ -44,12 +44,9 @@ def cosine_similarity_score(prompt_text, context_text):
 
 # Testing the functions
 
-# prompt = "slab wise sales of customer split by their and also give their mobile "
-# context = """	
-# 	{
-# 	"table_name": "date",
-# 	"columns": ["date_id", "month", "year", "quarter", "date"],
-# 	"context": "contains each date_id's detailed information. each row is a unique date. date_id is just identifier to join tables and not a date. join this table and use date column to solve queries regarding dates."
-# 		},"""
+# prompt = "slab wise sales"
+# context = """slab_name"""
 
-# cosine_similarity_score(prompt, context)
+
+# print(nlpTextProcessor(context))
+# print(cosine_similarity_score(prompt, context))

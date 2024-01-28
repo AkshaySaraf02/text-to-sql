@@ -39,13 +39,13 @@ if db_schema and kpis and query != "":
         required_dbs = []   
         dbs = eval(db_schema)
         for db in dbs:
-            print(db["table_name"] + f"{cosine_similarity_score(query, str(db))}")
-            if cosine_similarity_score(prompt_text=query , context_text=str(str(db).split())) > 0:
+            print(db["table_name"] + f" {cosine_similarity_score(query, str(db))}")
+            if cosine_similarity_score(prompt_text=query , context_text=str(db)) > 0:
                 required_dbs.append(db)
 
         st.subheader("Needed tables using Cosine Similarity")
-        for db in required_dbs:
-            st.write(db["table_name"])
+        for i, db in enumerate(required_dbs):
+            st.write(i+1,". ", db["table_name"])
 
         completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
