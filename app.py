@@ -3,7 +3,9 @@ import pdb
 from cosine_similarity import cosine_similarity_score
 import PyPDF2 as pdf
 from openai import OpenAI
-from config import OPEN_AI_API_KEY
+# from config import OPEN_AI_API_KEY
+
+OPEN_AI_API_KEY = st.text_input('Enter your OpenAI API KEY')
 
 
 client = OpenAI(api_key=OPEN_AI_API_KEY)
@@ -57,7 +59,7 @@ if db_schema and kpis and query != "":
 
 
         completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-3.5-turbo", # have to make this GPT-4
         messages=[{"role": "system", "content": f"""
     
         You are SQL Expert, based on the database schema info and KPI information from user generate a sql query.
