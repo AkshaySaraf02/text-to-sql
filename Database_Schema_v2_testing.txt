@@ -18,5 +18,10 @@
     "table_name": "inventory_items",
     "columns": ["item_code", "category"],
     "context": "Stores information about each inventory item or product, such as item code and category. Helpful for understanding the products available in the brand."
-  }
+  },
+  {
+    "table_name": "zone_tills",
+    "columns": ["till_id", "store_name", "zn_zone", "zn_city", "zn_state"],
+    "context": "Stores information about the stores in which bills are made. till_id is the primary key that joins with dim_event_zone_till_id in other tables. Columns named as zn_{attribute} has the values of attributes."
+  },
 ]
