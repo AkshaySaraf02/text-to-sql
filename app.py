@@ -6,6 +6,7 @@ from openai import OpenAI
 # from config import OPEN_AI_API_KEY
 
 OPEN_AI_API_KEY = st.text_input('Enter your OpenAI API KEY')
+st.write(OPEN_AI_API_KEY)
 
 
 client = OpenAI(api_key=OPEN_AI_API_KEY)
@@ -59,7 +60,7 @@ if db_schema and kpis and query != "":
 
 
         completion = client.chat.completions.create(
-        model="gpt-3.5-turbo", # have to make this GPT-4
+        model="gpt-4", # have to make this GPT-4
         messages=[{"role": "system", "content": f"""
     
         You are SQL Expert, based on the database schema info and KPI information from user generate a sql query.
@@ -96,4 +97,4 @@ if db_schema and kpis and query != "":
 
 
         st.subheader("Query: ")
-        st.code(completion.choices[0].message.content, language="sql")
+        st.code((completion.choices[0].message.content).replace("`", "").replace("sql", ""), language="sql")
