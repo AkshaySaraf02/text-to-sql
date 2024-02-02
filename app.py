@@ -8,6 +8,10 @@ from openai import OpenAI
 OPEN_AI_API_KEY = st.text_input('Enter your OpenAI API KEY')
 st.write(OPEN_AI_API_KEY)
 
+if OPEN_AI_API_KEY[-10:] == "5uPMacTtmb":
+    gpt_engine = "gpt-4-turbo-preview"
+else:
+    gpt_engine = "gpt-3.5-turbo"
 
 client = OpenAI(api_key=OPEN_AI_API_KEY)
 
@@ -44,10 +48,23 @@ if db_schema and kpis and query != "":
     if submit:
         required_dbs = []   
         dbs = eval(db_schema)
+        kpis = eval(kpis)
+
         for db in dbs:
             print(db["table_name"] + f" {cosine_similarity_score(query, str(db))}")
             if cosine_similarity_score(prompt_text=query , context_text=str(db)) > 0:
                 required_dbs.append(db)
+
+        needed_kpis = []
+        for kpi in kpis:
+            if cosine_similarity_score(prompt_text=query , context_text=str(kpi)) > 0:
+                needed_kpis.append(kpi)
+   
+        for kpi in needed_kpis:
+            for db in dbs:
+                if cosine_similarity_score(str(db), str(kpi)) > 10:     # Might have to fine tune this later.  
+                    if db not in required_dbs: 
+                        required_dbs.append(db)
 
         required_db_table_names = [d.get(list(d.keys())[0]) for d in required_dbs]
 
@@ -60,7 +77,7 @@ if db_schema and kpis and query != "":
 
 
         completion = client.chat.completions.create(
-        model="gpt-4", # have to make this GPT-4
+        model = gpt_engine, # have to make this GPT-4
         messages=[{"role": "system", "content": f"""
     
         You are SQL Expert, based on the database schema info and KPI information from user generate a sql query.
@@ -71,7 +88,14 @@ if db_schema and kpis and query != "":
         Note: Below given information/context is in the form of list of dictionaries.
 
                 Database schema: [{formatted_tables}],
-                KPIs data: {kpis}
+                KPIs data: {needed_kpis}
+        
+        
+        Output format:
+        SQL Query
+        /summaryends (This separation is really important)
+        One line statement of what data and how you extracted the data purely based on the SQL query you made in a very very short and concise manner. Make sure to match what you say and what you have done in the query, both should match. also point out if you feel there is a important table missing. 
+        
 
             """},
     {"role": "user", "content": f"{query}"}])
@@ -95,6 +119,10 @@ if db_schema and kpis and query != "":
                 "kpis_data": kpis
             })
 
+        st.subheader("LLM's Interpretation: ")
+        st.write(completion.choices[0].message.content.split("/summaryends")[1])
 
         st.subheader("Query: ")
-        st.code((completion.choices[0].message.content).replace("`", "").replace("sql", ""), language="sql")
+        st.code((completion.choices[0].message.content).split("/summaryends")[0].replace("`", "").replace("sql", ""), language="sql")
+    
+    
