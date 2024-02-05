@@ -24,4 +24,14 @@
     "columns": ["till_id", "store_name", "zn_zone", "zn_city", "zn_state"],
     "context": "Stores information about the stores in which bills are made. till_id is the primary key that joins with dim_event_zone_till_id in other tables. Columns named as zn_{attribute} has the values of attributes."
   },
+  {
+    "table_name": "campaigns",
+    "columns": ["name", "campaign_id", "campaign_start_date", "campaign_end_date"],
+    "context": "Stores information about the CRM Campaigns that have gone live. campaign_id is the identifier of the campaign. Used to fetch campaign information"
+  },
+  {
+    "table_name": "contact_info",
+    "columns": ["dim_campaign_group_id","dim_campaign_id","dim_communication_channel_id","dim_contact_date_id","dim_event_date_id","dim_event_user_Id","dim_event_zone_till_id","message_body"],
+    "context": "Stores log of campaign contact made to a customer."
+  }
 ]
