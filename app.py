@@ -57,13 +57,14 @@ if db_schema and kpis and query != "":
 
         needed_kpis = []
         for kpi in kpis:
-            if cosine_similarity_score(prompt_text=query , context_text=str(kpi)) > 0:
+            if cosine_similarity_score(prompt_text=query , context_text=str(kpi)) > 30:
                 needed_kpis.append(kpi)
    
         for kpi in needed_kpis:
             for db in dbs:
-                if cosine_similarity_score(str(db), str(kpi)) > 10:     # Might have to fine tune this later.  
+                if cosine_similarity_score(str(db), str(kpi)) > 50:     # Might have to fine tune this later.  
                     if db not in required_dbs: 
+                        print("FROM KPI DOC: ", db["table_name"])
                         required_dbs.append(db)
 
         required_db_table_names = [d.get(list(d.keys())[0]) for d in required_dbs]

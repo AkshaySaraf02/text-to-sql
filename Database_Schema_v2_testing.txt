@@ -33,5 +33,10 @@
     "table_name": "contact_info",
     "columns": ["dim_campaign_group_id","dim_campaign_id","dim_communication_channel_id","dim_contact_date_id","dim_event_date_id","dim_event_user_Id","dim_event_zone_till_id","message_body"],
     "context": "Stores log of campaign contact made to a customer."
+  },
+    {
+    "table_name": "response_bil_summary",
+    "columns": ["dim_event_user_id","bill_id","redeemed_points","total_lineitem_qty","bill_amount","dim_campaign_group_id","dim_event_zone_till_id","dim_event_date_id", "dim_campaign_id", "dim_communication_channel_id"],
+    "context": "Stores log of campaign response transactions made by customer. This is a transactional level table. Each transaction is associated with the campaign for which a user responded by making this transaction. "
   }
 ]
