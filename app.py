@@ -50,19 +50,23 @@ if db_schema and kpis and query != "":
         dbs = eval(db_schema)
         kpis = eval(kpis)
 
+        print("\nDB Schema Cosines ")
         for db in dbs:
             print(db["table_name"] + f" {cosine_similarity_score(query, str(db))}")
-            if cosine_similarity_score(prompt_text=query , context_text=str(db)) > 0:
+            if cosine_similarity_score(prompt_text=query , context_text=str(db) )> 5:
                 required_dbs.append(db)
 
         needed_kpis = []
         for kpi in kpis:
-            if cosine_similarity_score(prompt_text=query , context_text=str(kpi)) > 30:
+            print(kpi["kpi_name"], cosine_similarity_score(query, str(kpi["kpi_name"])))
+            if cosine_similarity_score(prompt_text=query , context_text=str(kpi["kpi_name"])) > 5:
+                print("Selected KPI: ", kpi["kpi_name"])
                 needed_kpis.append(kpi)
    
         for kpi in needed_kpis:
             for db in dbs:
-                if cosine_similarity_score(str(db), str(kpi)) > 50:     # Might have to fine tune this later.  
+                print("KPI Cosines: ", db["table_name"], cosine_similarity_score(str(db), str(kpi)))
+                if cosine_similarity_score(str(db), str(kpi)) > 14:     # Might have to fine tune this later.  
                     if db not in required_dbs: 
                         print("FROM KPI DOC: ", db["table_name"])
                         required_dbs.append(db)
