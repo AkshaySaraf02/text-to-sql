@@ -21,8 +21,8 @@ def nlpTextProcessor(sentence : str):
         str: The preprocessed text string, with stop words removed,
              punctuation and extra characters filtered out, and words lemmatized.
     """
-    tokenizedSent = word_tokenize(sentence)
-    removedStopwords = [word.replace("_", " ").replace("/", " ") for word in tokenizedSent if word not in stopWords]
+    tokenizedSent = word_tokenize(sentence.replace("_", " ").replace("/", " "))
+    removedStopwords = [word for word in tokenizedSent if word not in stopWords]
     finalOutput = []
     tempOutput = []
     for word in removedStopwords:
@@ -38,7 +38,7 @@ def cosine_similarity_score(prompt_text, context_text):
     Returns:
         float: The cosine similarity score between the two texts, as a percentage.
     """
-    prompt_text, context_text = nlpTextProcessor(prompt_text), nlpTextProcessor(context_text)
+    prompt_text, context_text = nlpTextProcessor(prompt_text.lower()), nlpTextProcessor(context_text.lower())
     text_vectors = vectorizer.fit_transform([prompt_text, context_text])
     similarity_score = cosine_similarity(text_vectors)
     return similarity_score[0, 1]*100
