@@ -1,12 +1,15 @@
 import streamlit as st
-import pdb
+import pandas as pd
 from cosine_similarity import cosine_similarity_score
 import PyPDF2 as pdf
 from openai import OpenAI
 # from config import OPEN_AI_API_KEY
 
 OPEN_AI_API_KEY = st.text_input('Enter your OpenAI API KEY')
-st.write(OPEN_AI_API_KEY)
+
+if "sql" and "query" not in st.session_state:
+    st.session_state.sql = ""
+    st.session_state.query = ""
 
 if OPEN_AI_API_KEY[-10:] == "5uPMacTtmb":
     gpt_engine = "gpt-4-turbo-preview"
@@ -29,6 +32,38 @@ def text_extraction(file):
             text += str(line).replace("\\r\\n", " ").replace("\\t", "   ").replace("b'", "").replace("'", '')
         return text
 
+def generate(formatted_tables, needed_kpis, query):
+    completion = client.chat.completions.create(
+    model = gpt_engine, # have to make this GPT-4
+    messages=[{"role": "system", "content": f"""
+    
+        You are SQL Expert, based on the database schema info and KPI information from user generate a sql query.
+        Understand the context given for each schema and KPI before calculating to better understand the requirement.
+        It is not necessary to use all the tables, only use the ones you think are required. Any column you dont recognize you must for sure understand from KPI info given below and calculate based on that only.
+        Don't give any explanation unless asked, just output the query. Ask if theres any doubt, don't output wrong info. 
+        
+        Note: Below given information/context is in the form of list of dictionaries.
+
+                Database schema: [{formatted_tables}],
+                KPIs data: {needed_kpis}
+        
+        
+        Output format:
+        SQL Query
+        /summaryends (This separation is really important)
+        One line statement of what data and how you extracted the data purely based on the SQL query you made in a very very short and concise manner. Make sure to match what you say and what you have done in the query, both should match. also point out if you feel there is a important table missing. 
+        
+
+            """},
+    {"role": "user", "content": f"{query}"}])
+
+    sql = (completion.choices[0].message.content).split("/summaryends")[0].replace("`", "").replace("sql", "")
+    interpretation = completion.choices[0].message.content.split("/summaryends")[1]
+
+    st.session_state.sql = sql
+    st.session_state.query = query
+
+    return sql, interpretation
 
 st.title("Text to SQL 🤖")
 
@@ -80,32 +115,8 @@ if db_schema and kpis and query != "":
         relevant_tables = [db for db in dbs if db["table_name"] in required_db_table_names]
         formatted_tables = ",\n".join([str(table) for table in relevant_tables])
 
-
-        completion = client.chat.completions.create(
-        model = gpt_engine, # have to make this GPT-4
-        messages=[{"role": "system", "content": f"""
-    
-        You are SQL Expert, based on the database schema info and KPI information from user generate a sql query.
-        Understand the context given for each schema and KPI before calculating to better understand the requirement.
-        It is not necessary to use all the tables, only use the ones you think are required. Any column you dont recognize you must for sure understand from KPI info given below and calculate based on that only.
-        Don't give any explanation unless asked, just output the query. Ask if theres any doubt, don't output wrong info. 
+        sql, interpretation = generate(formatted_tables, needed_kpis, query)
         
-        Note: Below given information/context is in the form of list of dictionaries.
-
-                Database schema: [{formatted_tables}],
-                KPIs data: {needed_kpis}
-        
-        
-        Output format:
-        SQL Query
-        /summaryends (This separation is really important)
-        One line statement of what data and how you extracted the data purely based on the SQL query you made in a very very short and concise manner. Make sure to match what you say and what you have done in the query, both should match. also point out if you feel there is a important table missing. 
-        
-
-            """},
-    {"role": "user", "content": f"{query}"}])
-        
-
         with st.expander("See Complete Query"):
             st.subheader("Original Final Prompt:")
             st.json({
@@ -125,9 +136,20 @@ if db_schema and kpis and query != "":
             })
 
         st.subheader("LLM's Interpretation: ")
-        st.write(completion.choices[0].message.content.split("/summaryends")[1])
+        st.write(interpretation)
 
         st.subheader("Query: ")
-        st.code((completion.choices[0].message.content).split("/summaryends")[0].replace("`", "").replace("sql", ""), language="sql")
-    
-    
+        st.code(sql, language="sql")
+
+if len(st.session_state.sql) > 0:
+    if st.button("Mark as Correct"):
+        print("Correct Query") 
+        st.subheader("Thank you for your feedback 👍🏻. Try some more prompts.")
+        
+        current_data = pd.DataFrame([[st.session_state.query, st.session_state.sql.replace("\n", " ")]], columns=["Prompt", "Query"])
+        print(current_data)
+
+        training_data = pd.read_csv("training_data.csv")
+        pd.concat([training_data, current_data], axis=0)[["Prompt", "Query"]].to_csv("training_data.csv", index=False)
+        st.session_state.sql = ""
+        st.session_state.query = ""
