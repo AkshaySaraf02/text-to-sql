@@ -50,7 +50,7 @@ def generate(formatted_tables, needed_kpis, query):
         
         Output format:
         SQL Query
-        /summaryends (This separation is really important)
+        /summaryends (This separation is mandatory)
         One line statement of what data and how you extracted the data purely based on the SQL query you made in a very very short and concise manner. Make sure to match what you say and what you have done in the query, both should match. also point out if you feel there is a important table missing. 
         
 
