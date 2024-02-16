@@ -1,0 +1,19 @@
+[
+	{
+	  "name" : "Campaign Performance",
+	  "query": "SELECT * FROM campaign",
+	  "context": "To Perform and understand the result and impact of a certain campaign on the targeted customers"
+	},
+
+	{
+	  "name" : "Points Information",
+	  "query": "SELECT * FROM points",
+	  "context": "This query helps to extract crucial performance about points issued, points redeemed & points expired."
+	},
+
+	{
+	  "name" : "Coupons & Vouchers Information",
+	  "query": "SELECT * FROM coupons",
+	  "context": "To fetch information about coupon and voucher issued, redeemed and expired. All coupons and vouchers related data can 			be fetched from this query."
+	}
+]
