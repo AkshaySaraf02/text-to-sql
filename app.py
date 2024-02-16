@@ -3,22 +3,9 @@ import pandas as pd
 from cosine_similarity import cosine_similarity_score
 import PyPDF2 as pdf
 from openai import OpenAI
-# from config import OPEN_AI_API_KEY
-
-OPEN_AI_API_KEY = st.text_input('Enter your OpenAI API KEY')
-
-if "sql" and "query" not in st.session_state:
-    st.session_state.sql = ""
-    st.session_state.query = ""
-
-if OPEN_AI_API_KEY[-10:] == "5uPMacTtmb":
-    gpt_engine = "gpt-4-turbo-preview"
-else:
-    gpt_engine = "gpt-3.5-turbo"
-
-client = OpenAI(api_key=OPEN_AI_API_KEY)
 
 def text_extraction(file):
+
     text = ""
     if file.name.split(".")[-1] == "pdf":
         # pdb.set_trace()
@@ -31,6 +18,7 @@ def text_extraction(file):
         for line in file:
             text += str(line).replace("\\r\\n", " ").replace("\\t", "   ").replace("b'", "").replace("'", '')
         return text
+    
 
 def generate(formatted_tables, needed_kpis, query):
     completion = client.chat.completions.create(
@@ -50,7 +38,7 @@ def generate(formatted_tables, needed_kpis, query):
         
         Output format:
         SQL Query
-        /summaryends (This separation is mandatory)
+        /summaryends (This separation is very mandatory. Never ever forget to put this separation.)
         One line statement of what data and how you extracted the data purely based on the SQL query you made in a very very short and concise manner. Make sure to match what you say and what you have done in the query, both should match. also point out if you feel there is a important table missing. 
         
 
@@ -65,17 +53,55 @@ def generate(formatted_tables, needed_kpis, query):
 
     return sql, interpretation
 
+
+# Initializing OpenAI Client
+OPEN_AI_API_KEY = st.text_input('Enter your OpenAI API KEY')
+
+if OPEN_AI_API_KEY[-10:] == "5uPMacTtmb":
+    gpt_engine = "gpt-4-turbo-preview"
+else:
+    gpt_engine = "gpt-3.5-turbo"
+
+client = OpenAI(api_key=OPEN_AI_API_KEY)
+
+
+# Session state code for nested buttons. 
+if "sql" and "query" not in st.session_state:
+    st.session_state.sql = ""
+    st.session_state.query = ""
+
+
 st.title("Text to SQL 🤖")
 
+# DB Schema & KPI Documents uploader
 col1, col2 = st.columns(2, gap="medium")
 with col1:
     db_schema = st.file_uploader(label="Database Schema", type=["pdf", "txt"])
 with col2:
     kpis = st.file_uploader(label="KPIs", type=["pdf", "txt"])
 
+# User's input
 query = st.text_input(label="Enter your prompt")
-submit = st.button("Submit")
 
+# Suggesting sample codes using Cosine Similarity.
+sample_codes = eval(str(open("sample_codes.txt", "r").read()))
+suggestions = []
+if len(query) > 0:
+    for code in sample_codes:
+        print(code["name"], cosine_similarity_score(code["context"], query))
+        if cosine_similarity_score(code["context"], query) > 10:
+            suggestions.append(code)
+
+if len(suggestions) > 0:
+    part1, part2 = st.columns(2, gap="small")
+    with part1: 
+        st.subheader("Do you mean the following?")
+    with part2:
+        for sugg in suggestions:
+            st.button(sugg["name"])
+
+# Submit button to generate the query.
+submit = st.button("Submit")
 
 if db_schema and kpis and query != "":
     db_schema = text_extraction(db_schema)
@@ -141,14 +167,17 @@ if db_schema and kpis and query != "":
         st.subheader("Query: ")
         st.code(sql, language="sql")
 
+# Feedback button         
 if len(st.session_state.sql) > 0:
     if st.button("Mark as Correct"):
         print("Correct Query") 
         st.subheader("Thank you for your feedback 👍🏻. Try some more prompts.")
         
+        # Converting prompt and sql to dataframe.
         current_data = pd.DataFrame([[st.session_state.query, st.session_state.sql.replace("\n", " ")]], columns=["Prompt", "Query"])
         print(current_data)
 
+        # Appending new dataframe to previous and saving to future training data.
         training_data = pd.read_csv("training_data.csv")
         pd.concat([training_data, current_data], axis=0)[["Prompt", "Query"]].to_csv("training_data.csv", index=False)
         st.session_state.sql = ""

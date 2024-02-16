@@ -14,8 +14,8 @@
   {
     "table_name": "date",
     "columns": ["date_id", "month", "year", "quarter", "date"],
-    "context": "Contains detailed information for each date, including date ID, month, year, quarter, and the date itself. Useful for solving queries related to dates by joining with other tables.",
-    "keywords": "before, after, during,  since, between"
+    "context": "Contains information for each date, including date ID, month, year, quarter, and the date itself. Useful for solving queries related to dates by joining other tables.",
+    "keywords": "before, after, during,  since, between, past, date, year, month, day, quarter"
   },
   {
     "table_name": "inventory_items",
@@ -25,8 +25,9 @@
   },
   {
     "table_name": "zone_tills",
-    "columns": ["till_id", "store_name", "zn_zone", "zn_city", "zn_state"],
-    "context": "Stores information about the stores in which bills are made. till_id is the primary key that joins with dim_event_zone_till_id in other tables. Columns named as zn_{attribute} has the values of attributes.",
+    "columns": ["till_id", "store_name", "zn_zone", "zn_city", "zn_state", "concept"],
+    "context": "Stores information about the stores in which bills are made. till_id is the primary key that joins with dim_event_zone_till_id in other tables. Columns named as zn_{attribute} has the values of attributes.
+                  Concept is a type of store i.e [Fofo or Coco/Ebo].",
     "keywords": "store, city, state, region, concept, tills, VCS"
   },
   {
