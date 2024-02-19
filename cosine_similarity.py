@@ -32,17 +32,32 @@ def nlpTextProcessor(sentence : str):
     return finalOutput
 
 
-def cosine_similarity_score(prompt_text, context_text):
+def cosine_similarity_scores(prompt_text, context_text, threshold, output_list, label="", matching_key="", name_key=""):
     """Calculates cosine similarity between two text strings.
 
     Returns:
         float: The cosine similarity score between the two texts, as a percentage.
     """
-    prompt_text, context_text = nlpTextProcessor(prompt_text.lower()), nlpTextProcessor(context_text.lower())
-    text_vectors = vectorizer.fit_transform([prompt_text, context_text])
-    similarity_score = cosine_similarity(text_vectors)
-    return similarity_score[0, 1]*100
-
+    print("\n" + label)
+    if type(context_text) == str:
+        prompt_text, context_text = nlpTextProcessor(prompt_text.lower()), nlpTextProcessor(context_text.lower())
+        text_vectors = vectorizer.fit_transform([prompt_text, context_text])
+        similarity_score = cosine_similarity(text_vectors)
+        return round(similarity_score[0, 1]*100, 2)
+    else:
+        for item in context_text:
+            item_dict = item
+            if len(matching_key) > 0:
+                item = item[matching_key]
+            prompt_text, item = str(prompt_text), str(item)
+            prompt_text, item = nlpTextProcessor(prompt_text.lower()), nlpTextProcessor(item.lower())
+            text_vectors = vectorizer.fit_transform([prompt_text, item])
+            similarity_score = cosine_similarity(text_vectors)    
+            score = round(similarity_score[0, 1]*100, 2)
+            print(item_dict[name_key], ": ", score, "%")
+                
+            if score >= threshold and item_dict not in output_list:
+                output_list.append(item_dict)
 
 
 # Testing the functions
