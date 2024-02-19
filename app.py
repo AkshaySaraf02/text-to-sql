@@ -3,6 +3,9 @@ import pandas as pd
 from cosine_similarity import cosine_similarity_score
 import PyPDF2 as pdf
 from openai import OpenAI
+from sql_to_data import execution_context_creation, sql_execution, data_retrieval, destroy_execution_context
+import time
+from sql_doctor import curated_sql
 
 def text_extraction(file):
 
@@ -166,6 +169,55 @@ if db_schema and kpis and query != "":
 
         st.subheader("Query: ")
         st.code(sql, language="sql")
+        # print(sql)
+        sql_query = curated_sql(sql)
+        # print("Curated SQL: \n", sql_query)
+    
+        # sql_query = """ 
+        #                 SELECT      
+        #                 d.month,      
+        #                 d.year,      
+        #                 round(SUM(bs.bill_amount) / COUNT(DISTINCT bs.bill_id),0) AS Average_Transaction_Value 
+        #                 FROM      
+        #                 read_api_150877.users u 
+        #                 JOIN      read_api_150877.bill_summary bs ON u.user_id = bs.dim_event_user_id 
+        #                 JOIN      read_api_150877.date d ON bs.dim_event_date_id = d.date_id 
+        #                 WHERE      u.slab_name = 'PLATINUM'      
+        #                 AND d.date >= '2023-04-01' 
+        #                 GROUP BY      d.year, d.month 
+        #                 ORDER BY      d.year, d.month
+        #             """
+        # sql_query = "SELECT * FROM read_api_150877.zone_tills LIMIT 10"
+        
+        # sql_query = "use read_api_150877; SELECT * FROM zone_tills LIMIT 10;"
+        
+        #   SQL to Data Generation
+        
+        try:
+            cluster_id= st.secrets.databricks.cluster_id
+            context_id=execution_context_creation()
+            command_id=sql_execution(sql_query, context_id, cluster_id)
+            print("Waiting for result retrieval...")
+            for i in range(30,0,-1):
+                print("{:2d}".format(i), end="\r", flush=True)
+                time.sleep(1)
+            df=data_retrieval(context_id, command_id,cluster_id)
+            if df.shape[0]>0:
+                print("Result Retrieved Successfully  proceeding with destruction of execution context")
+            else:
+                print("Still waiting for command to execute, please try after sometime, proceeding with destruction of execution context")
+            
+            destroy_execution_context(cluster_id, context_id)
+            st.dataframe(df)
+            
+        except:
+            print("Some error has occured please check the flow")
+            destroy_execution_context(cluster_id, context_id)
+
+        
+
+
+
 
 # Feedback button         
 if len(st.session_state.sql) > 0:
