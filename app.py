@@ -117,7 +117,7 @@ if db_schema and kpis and query != "":
         print("\nDB Schema Cosines ")
         for db in dbs:
             print(db["table_name"] + f" {cosine_similarity_score(query, str(db))}")
-            if cosine_similarity_score(prompt_text=query , context_text=str(db) )> 5:
+            if cosine_similarity_score(prompt_text=query , context_text=str(db) )> 3:
                 required_dbs.append(db)
 
         needed_kpis = []
@@ -171,7 +171,7 @@ if db_schema and kpis and query != "":
         st.code(sql, language="sql")
         # print(sql)
         sql_query = curated_sql(sql)
-        # print("Curated SQL: \n", sql_query)
+        print("Curated SQL: \n", sql_query)
     
         # sql_query = """ 
         #                 SELECT      
@@ -193,26 +193,26 @@ if db_schema and kpis and query != "":
         
         #   SQL to Data Generation
         
-        try:
-            cluster_id= st.secrets.databricks.cluster_id
-            context_id=execution_context_creation()
-            command_id=sql_execution(sql_query, context_id, cluster_id)
-            print("Waiting for result retrieval...")
-            for i in range(30,0,-1):
-                print("{:2d}".format(i), end="\r", flush=True)
-                time.sleep(1)
-            df=data_retrieval(context_id, command_id,cluster_id)
-            if df.shape[0]>0:
-                print("Result Retrieved Successfully  proceeding with destruction of execution context")
-            else:
-                print("Still waiting for command to execute, please try after sometime, proceeding with destruction of execution context")
+        # try:
+        #     cluster_id= st.secrets.databricks.cluster_id
+        #     context_id=execution_context_creation()
+        #     command_id=sql_execution(sql_query, context_id, cluster_id)
+        #     print("Waiting for result retrieval...")
+        #     for i in range(20,0,-1):
+        #         print("{:2d}".format(i), end="\r", flush=True)
+        #         time.sleep(1)
+        #     df=data_retrieval(context_id, command_id,cluster_id)
+        #     if df.shape[0]>0:
+        #         print("Result Retrieved Successfully  proceeding with destruction of execution context")
+        #     else:
+        #         print("Still waiting for command to execute, please try after sometime, proceeding with destruction of execution context")
             
-            destroy_execution_context(cluster_id, context_id)
-            st.dataframe(df)
+        #     destroy_execution_context(cluster_id, context_id)
+        #     st.dataframe(df)
             
-        except:
-            print("Some error has occured please check the flow")
-            destroy_execution_context(cluster_id, context_id)
+        # except:
+        #     print("Some error has occured please check the flow")
+        #     destroy_execution_context(cluster_id, context_id)
 
         
 
