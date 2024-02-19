@@ -8,7 +8,7 @@
   {
     "table_name": "bill_summary",
     "columns": ["dim_event_user_id", "bill_id", "bill_amount", "line_item_quantity", "dim_event_date_id"],
-    "context": "Stores sales and billing information. Each row corresponds to a unique bill, with details such as user ID, bill ID, amount, line item quantity, and date ID for reference.",
+    "context": "Stores sales and billing information. Each row corresponds to a unique bill, with details such as user ID, bill ID, amount, line item quantity, and dim_event_date_id is primary key for date table",
     "keywords": "bills, txns, transactions, invoices, purchase"
   },
   {
