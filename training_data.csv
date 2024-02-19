@@ -7,3 +7,5 @@ Month on month ATV of Platinum slab customers from 2023-04-01 to till now ," SEL
 Show total sales from Pune stores, SELECT SUM(b.bill_amount) AS total_sales FROM bill_summary b JOIN zone_tills z ON b.dim_event_zone_till_id = z.till_id WHERE z.zn_city = 'Pune';  
 SHow me concept wise region wise city wise total bills and sales," SELECT     z.concept,     z.zn_state AS region,     z.zn_city AS city,     COUNT(b.bill_id) AS total_bills,     SUM(b.bill_amount) AS total_sales FROM     bill_summary b JOIN     zone_tills z ON b.dim_event_user_id = z.till_id GROUP BY     z.concept, z.zn_state, z.zn_city  "
 Slab wise sales," SELECT u.slab_name, SUM(b.bill_amount) AS total_sales FROM users u JOIN bill_summary b ON u.user_id = b.dim_event_user_id GROUP BY u.slab_name  "
+slab wise sales," SELECT      u.slab_name,      SUM(b.bill_amount) AS total_sales FROM      users u JOIN      bill_summary b ON u.user_id = b.dim_event_user_id GROUP BY      u.slab_name;  "
+slab wise sales," SELECT u.slab_name, SUM(b.bill_amount) AS total_sales FROM users u JOIN bill_summary b ON u.user_id = b.dim_event_user_id GROUP BY u.slab_name  "
