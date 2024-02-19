@@ -35,7 +35,7 @@
     "columns": ["name", "campaign_id", "campaign_start_date", "campaign_end_date"],
     "context": "Stores information about the CRM Campaigns that have gone live. campaign_id is the identifier of the campaign. Used to fetch campaign information",
     "keywords": "campaign,  campaign_group"
-  },total sales, bills, ATV, ABS of GOLD slab customers in last 5 months
+  },
   {
     "table_name": "contact_info",
     "columns": ["dim_campaign_group_id","dim_campaign_id","dim_communication_channel_id","dim_contact_date_id","dim_event_date_id","dim_event_user_Id","dim_event_zone_till_id","message_body"],
