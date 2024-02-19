@@ -1,0 +1,57 @@
+[
+  {
+    "table_name": "users",
+    "columns": ["user_id", "slab_name", "mobile"],
+    "context": "Contains unique customer data, including user ID, slab name, and mobile number. Each row represents a distinct customer.",
+    "keywords": "slab, tier, fraud, date of birth, test and control"
+  },
+  {
+    "table_name": "bill_summary",
+    "columns": ["dim_event_user_id", "bill_id", "bill_amount", "line_item_quantity", "dim_event_date_id"],
+    "context": "Stores sales and billing information. Each row corresponds to a unique bill, with details such as user ID, bill ID, amount, line item quantity, and dim_event_date_id is primary key for date table",
+    "keywords": "bills, txns, transactions, invoices, purchase"
+  },
+  {
+    "table_name": "date",
+    "columns": ["date_id", "month", "year", "quarter", "date"],
+    "context": "Contains information for each date, including date ID, month, year, quarter, and the date itself. Useful for solving queries related to date and time of data required, by joining other tables on dim_event_date_id.",
+    "keywords": "before, after, during, last, since, between, past, date, year, month, day, quarter"
+  },
+  {
+    "table_name": "inventory_items",
+    "columns": ["item_code", "category"],
+    "context": "Stores information about each inventory item or product, such as item code and category. Helpful for understanding the products available in the brand.",
+    "keywords": "product, item, category, group" 
+  },
+  {
+    "table_name": "zone_tills",
+    "columns": ["till_id", "store_name", "zn_zone", "zn_city", "zn_state", "concept"],
+    "context": "Stores information about the stores in which bills are made. till_id is the primary key that joins with dim_event_zone_till_id in other tables. Columns named as zn_{attribute} has the values of attributes.
+                  Concept is a type of store i.e [Fofo or Coco/Ebo].",
+    "keywords": "store, city, state, region, concept, tills, VCS"
+  },
+  {
+    "table_name": "campaigns",
+    "columns": ["name", "campaign_id", "campaign_start_date", "campaign_end_date"],
+    "context": "Stores information about the CRM Campaigns that have gone live. campaign_id is the identifier of the campaign. Used to fetch campaign information",
+    "keywords": "campaign,  campaign_group"
+  },
+  {
+    "table_name": "contact_info",
+    "columns": ["dim_campaign_group_id","dim_campaign_id","dim_communication_channel_id","dim_contact_date_id","dim_event_date_id","dim_event_user_Id","dim_event_zone_till_id","message_body"],
+    "context": "Stores log of campaign contact made to a customer.",
+    "keywords": "contact, target, test_control, response, campaign, respon" 
+  },
+    {
+    "table_name": "response_bill_summary",
+    "columns": ["dim_event_user_id","bill_id","redeemed_points","total_lineitem_qty","bill_amount","dim_campaign_group_id","dim_event_zone_till_id","dim_event_date_id", "dim_campaign_id", "dim_communication_channel_id"],
+    "context": "Stores log of campaign response transactions made by customer. This is a transactional level table. Each transaction is associated with the campaign for which a user responded by making this transaction. ",
+    "keywords": "performance, campaign, campaign+report, response,"
+  },
+    {
+    "table_name": "points",
+    "columns": ["allocated_points","awarded_ref_id","bill_id","bill_lineitem_id","bill_number","deducted_points","deduction_currency_value","dim_awarded_date_id","dim_awarded_expiry_date_id","dim_awarded_points_promotion_id","dim_awarded_program_id","dim_awarded_zone_till_id","dim_category_id","dim_deduction_type_id","dim_event_date_id","dim_event_program_id","dim_event_time_id","dim_event_user_id","dim_event_zone_till_id","dim_expiry_date_id","dim_expiry_time_id","dim_latest_updated_date_id","dim_latest_updated_time_id","dim_old_category_id","dim_points_promotion_id","dim_redemption_program_id","event_id","redemption_bill_id","redemption_bill_number","dim_points_event_type_id","dim_points_awarded_type_id"],
+    "context": "Stores log of points information. This is an event (allocation, redemption, expiry, etc.) level table.",
+    "keywords": "points, loyalty, active points, redemption, allocation, expiry, ROI, extra sales,"
+  }
+]
