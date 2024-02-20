@@ -43,7 +43,8 @@ def generate(formatted_tables, needed_kpis, query, required_dbs):
         Important rules to follow while generating the query:
             1. Query should be strictly a Spark SQL Query.
             1. Make sure that all tables have aliases and all columns have prefixes of aliases of tables they are extracted from, to avoid ambiguous column issues.
-            3. Do not consider dim_event_date_id column as date, it is just identifier for a particular date, Instead use date column from date table for date operations. 
+            3. Do not consider dim_event_date_id column as date, it is just identifier for a particular date, Instead use date column from date table for date operations.
+            4. While taking specific column matching information, always match it like this: lower(slab_name) = "platinum". This removes manual error caused by incorrect case input
         
         Output format:
         Spark SQL Query
