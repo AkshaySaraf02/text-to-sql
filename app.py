@@ -24,7 +24,7 @@ def text_extraction(file):
         return text
     
 
-def generate(formatted_tables, needed_kpis, query):
+def generate(formatted_tables, needed_kpis, query, required_dbs):
     completion = client.chat.completions.create(
     model = gpt_engine, # have to make this GPT-4
     messages=[{"role": "system", "content": f"""
@@ -54,6 +54,7 @@ def generate(formatted_tables, needed_kpis, query):
 
     st.session_state.sql = sql
     st.session_state.query = query
+    st.session_state.required_dbs = required_dbs
 
     return sql, interpretation
 
@@ -90,16 +91,19 @@ def modify_sql(interpretation, sql_query, feedback, formatted_tables, needed_kpi
                                     2. Previous query: {sql_query}
                                     3. Feedback / Changes Needed : {feedback}
                                 """}])
-    print(completion.choices[0].message.content)
-                                    
+
+st.title("Text to SQL 🤖")
+st.sidebar.title("Inputs")
 
 # Initializing OpenAI Client
-OPEN_AI_API_KEY = st.text_input('Enter your OpenAI API KEY')
+OPEN_AI_API_KEY = st.sidebar.text_input('Enter your OpenAI API KEY', )
 
 if OPEN_AI_API_KEY[-10:] == "5uPMacTtmb":
     gpt_engine = "gpt-4-turbo-preview"
 else:
     gpt_engine = "gpt-3.5-turbo"
+
+print(gpt_engine)
 
 client = OpenAI(api_key=OPEN_AI_API_KEY)
 
@@ -109,156 +113,162 @@ if "sql" and "query" not in st.session_state:
     st.session_state.sql = ""
     st.session_state.query = ""
 
+if "required_dbs" not in st.session_state:
+    st.session_state.required_dbs = []
 
-st.title("Text to SQL 🤖")
+if "messages" not in st.session_state.keys():
+    st.session_state.messages = [{"role": "assistant", "content": "Hey! Can I help you with any data request?"}]
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        if "Required query" in message["content"] and message["role"]== "assistant":
+            # st.subheader("System's Interpretation: ")
+            st.write(message["content"].split("Required query")[0])
+            with st.expander("Needed tables using Cosine Similarity"):
+                required_dbs = eval(message["content"].split("Required query")[1].split("required_dbs")[1])
+                for i, db in enumerate(required_dbs):
+                        st.write(i+1,". ", db["table_name"])
+            st.subheader("Query: ") 
+            st.code(message["content"].split("Required query")[1].split("required_dbs")[0], "sql")
+        else:
+            st.write(message["content"])
 
 # DB Schema & KPI Documents uploader
-col1, col2 = st.columns(2, gap="medium")
+col1, col2 = st.sidebar.columns(2, gap="medium")
 with col1:
-    db_schema = st.file_uploader(label="Database Schema", type=["pdf", "txt"])
+    db_schema = st.sidebar.file_uploader(label="Database Schema", type=["pdf", "txt"])
 with col2:
-    kpis = st.file_uploader(label="KPIs", type=["pdf", "txt"])
-
-# User's input
-query = st.text_input(label="Enter your prompt")
+    kpis = st.sidebar.file_uploader(label="KPIs", type=["pdf", "txt"])
 
 # Suggesting sample codes using Cosine Similarity.
 sample_codes = eval(str(open("sample_codes.txt", "r").read()))
+sample_codes = [code for code in sample_codes]
 suggestions = []
 
-if len(query) > 0: 
-    cosine_similarity_scores(query, sample_codes, threshold=10, output_list=suggestions, matching_key="context", name_key="name")
+# Enable User's input when all credentials are uploaded.
+if OPEN_AI_API_KEY and db_schema and kpis:
+    if query := st.chat_input("Enter your prompt"):
+        st.session_state.messages.append({"role": "user", "content": query})
+        cosine_similarity_scores(query, sample_codes, threshold=10, output_list=suggestions, matching_key="context", name_key="name")
+        with st.chat_message("user"):
+            st.write(query)
 
-if len(suggestions) > 0:
-    part1, part2 = st.columns(2, gap="small")
-    with part1: 
-        st.subheader("Do you mean the following?")
-    with part2:
-        for sugg in suggestions:
-            st.button(sugg["name"])
+    if len(suggestions) > 0:
+        part1, part2 = st.columns(2, gap="small")
+        with part1: 
+            st.subheader("Do you mean the following?")
+        with part2:
+            for sugg in suggestions:
+                st.button(sugg["name"])
 
-# Submit button to generate the query.
-submit = st.button("Submit")
+    if st.session_state.messages[-1]["role"] != "assistant":
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                db_schema = text_extraction(db_schema)
+                kpis = text_extraction(kpis)
 
-if db_schema and kpis and query != "":
-    db_schema = text_extraction(db_schema)
-    kpis = text_extraction(kpis)
-    if submit:
-        dbs = eval(db_schema)
-        kpis = eval(kpis)
-        
-        required_dbs = []  # Cosine similarity to get relevant tables from DB Schema doc.  
-        cosine_similarity_scores(query, dbs, 3, label="--> DB Schema", name_key="table_name", output_list=required_dbs)
+                dbs = eval(db_schema)
+                kpis = eval(kpis)
+                
+                required_dbs = []  # Cosine similarity to get relevant tables from DB Schema doc.  
+                cosine_similarity_scores(prompt_text=query, context_text=dbs, threshold=3, label="--> DB Schema", name_key="table_name", output_list=required_dbs)
 
-        needed_kpis = [] # Cosine similarity to get relevant KPIs from KPIs doc.
-        cosine_similarity_scores(query, kpis, 5, label="--> Required KPIs", matching_key="kpi_name", name_key="kpi_name", output_list=needed_kpis)
+                needed_kpis = [] # Cosine similarity to get relevant KPIs from KPIs doc.
+                cosine_similarity_scores(query, kpis, 5, label="--> Required KPIs", matching_key="kpi_name", name_key="kpi_name", output_list=needed_kpis)
 
-        for kpi in needed_kpis: # Cosine similarity to get tables required to calculate selected KPIs .
-            cosine_similarity_scores(kpi, dbs, 14, required_dbs, name_key="table_name", label="--> Tables from KPIs")
+                for kpi in needed_kpis: # Cosine similarity to get tables required to calculate selected KPIs .
+                    cosine_similarity_scores(kpi, dbs, 14, required_dbs, name_key="table_name", label="--> Tables from KPIs")
 
-        required_db_table_names = [d.get(list(d.keys())[0]) for d in required_dbs]
+                required_db_table_names = [d.get(list(d.keys())[0]) for d in required_dbs]
 
-        st.subheader("Needed tables using Cosine Similarity")
-        for i, db in enumerate(required_dbs):
-            st.write(i+1,". ", db["table_name"])
+                relevant_tables = [db for db in dbs if db["table_name"] in required_db_table_names]
+                formatted_tables = ",\n".join([str(table) for table in relevant_tables])
 
-        relevant_tables = [db for db in dbs if db["table_name"] in required_db_table_names]
-        formatted_tables = ",\n".join([str(table) for table in relevant_tables])
+                try:
+                    sql, interpretation = generate(formatted_tables, needed_kpis, query, required_dbs)
+                except:
+                    pass
+            try:
+                # st.subheader("System's Interpretation: ")
+                st.write(interpretation)
 
-        # modify_sql(interpretation="Calculated sales grouped by their slab_name",
-        #             sql_query="Select user_id, sum(bill_amount) from bill_summary bs join users u on u.user__id = bs.dim_event_user_id group by 1",
-        #             feedback="Sorry I meant by month and not slab wise.",
-        #             formatted_tables=formatted_tables, needed_kpis=needed_kpis)
-        #       
-        sql, interpretation = generate(formatted_tables, needed_kpis, query)
-        
-        with st.expander("See Complete Query"):
-            st.subheader("Original Final Prompt:")
-            st.json({
-                "user_query": query,
-                "system_prompt": f"""
-                    You are an SQL Expert. Based on the identified relevant tables from the database schema and KPI information from the user, generate a SQL query.
-                    Understand the context given for each table before calculating to better understand the requirement.
-                    It is not necessary to use all the tables; only use the ones identified through cosine similarity.
+                with st.expander("Needed tables using Cosine Similarity"):
+                    for i, db in enumerate(required_dbs):
+                        st.write(i+1,". ", db["table_name"])
+                
+                st.subheader("Query: ")
+                st.code(sql, language="sql")
 
-                    Note: Below given information/context is in the form of a list of dictionaries.
+                sql_query = curated_sql(sql)
+                print("Curated SQL: \n", sql_query)
+            except:
+                    st.write("Umm. Sorry I didn't catch that I only understand data requests.")
 
-                    Database schema: [{formatted_tables}],
-                    KPIs data: {kpis}
-                """,
-                "database_schema": relevant_tables,
-                "kpis_data": kpis
-            })
-
-        st.subheader("LLM's Interpretation: ")
-        st.write(interpretation)
-
-        st.subheader("Query: ")
-        st.code(sql, language="sql")
-        # print(sql)
-        sql_query = curated_sql(sql)
-        print("Curated SQL: \n", sql_query)
-    
-        # sql_query = """ 
-        #                 SELECT      
-        #                 d.month,      
-        #                 d.year,      
-        #                 round(SUM(bs.bill_amount) / COUNT(DISTINCT bs.bill_id),0) AS Average_Transaction_Value 
-        #                 FROM      
-        #                 read_api_150877.users u 
-        #                 JOIN      read_api_150877.bill_summary bs ON u.user_id = bs.dim_event_user_id 
-        #                 JOIN      read_api_150877.date d ON bs.dim_event_date_id = d.date_id 
-        #                 WHERE      u.slab_name = 'PLATINUM'      
-        #                 AND d.date >= '2023-04-01' 
-        #                 GROUP BY      d.year, d.month 
-        #                 ORDER BY      d.year, d.month
-        #             """
-        # sql_query = "SELECT * FROM read_api_150877.zone_tills LIMIT 10"
-        
-        # sql_query = "use read_api_150877; SELECT * FROM zone_tills LIMIT 10;"
-        
-        #   SQL to Data Generation
-        
-        # try:
-        #     cluster_id= st.secrets.databricks.cluster_id
-        #     context_id=execution_context_creation()
-        #     command_id=sql_execution(sql_query, context_id, cluster_id)
-        #     print("Waiting for result retrieval...")
-        #     for i in range(20,0,-1):
-        #         print("{:2d}".format(i), end="\r", flush=True)
-        #         time.sleep(1)
-        #     df=data_retrieval(context_id, command_id,cluster_id)
-        #     if df.shape[0]>0:
-        #         print("Result Retrieved Successfully  proceeding with destruction of execution context")
-        #     else:
-        #         print("Still waiting for command to execute, please try after sometime, proceeding with destruction of execution context")
-            
-        #     destroy_execution_context(cluster_id, context_id)
-        #     st.dataframe(df)
-            
-        # except:
-        #     print("Some error has occured please check the flow")
-        #     destroy_execution_context(cluster_id, context_id)
-
-        
-
-
-
-
-# Feedback button         
-if len(st.session_state.sql) > 0:
-    if st.button("Mark as Correct"):
-        print("Correct Query") 
-        st.subheader("Thank you for your feedback 👍🏻. Try some more prompts.")
-        
-        # Converting prompt and sql to dataframe.
-        current_data = pd.DataFrame([[st.session_state.query, st.session_state.sql.replace("\n", " ")]], columns=["Prompt", "Query"])
-        print(current_data)
-        file_name = "analytics/data/akhil/llm_training_data/training_data.csv"
-        # Appending new dataframe to previous and saving to future training data.
-        training_data = s3_import(file_name)
-        # training_data = pd.read_csv("training_data.csv")
-        df = pd.concat([training_data, current_data], axis=0)[["Prompt", "Query"]]
-        s3_export(df, file_name)
+    try:
+        message = {"role": "assistant", "content": interpretation + "\n\n\nRequired query" + sql + "required_dbs"+str(required_dbs)}
+        st.session_state.messages.append(message)
+    except:
         st.session_state.sql = ""
         st.session_state.query = ""
+        st.session_state.required_dbs = ""
+    
+
+
+
+    # Feedback button.
+    if len(st.session_state.sql) > 0:
+        if st.button("Mark Query as Correct"):
+            print("Correct Query") 
+            st.subheader("Thank you for your feedback 👍🏻. Try some more prompts.")
+            
+            # Converting prompt and sql to dataframe.
+            current_data = pd.DataFrame([[st.session_state.query, st.session_state.sql.replace("\n", " ")]], columns=["Prompt", "Query"])
+            print(current_data)
+            file_name = "analytics/data/akhil/llm_training_data/training_data.csv"
+
+            # Appending new dataframe to previous and saving to future training data.
+            training_data = s3_import(file_name)
+
+            # training_data = pd.read_csv("training_data.csv")
+            df = pd.concat([training_data, current_data], axis=0)[["Prompt", "Query"]]
+            s3_export(df, file_name)
+            st.session_state.sql = ""
+            st.session_state.query = ""
+
+        try:
+            cluster_id= st.secrets.databricks.cluster_id
+            context_id=execution_context_creation()
+            command_id=sql_execution(sql_query, context_id, cluster_id)
+            print("Waiting for result retrieval...")
+            countdown = st.empty()
+            for i in range(20,0,-1):
+                print("{:2d}".format(i), end="\r", flush=True)
+                countdown.text(f"Please wait {i} seconds for the data.")
+                time.sleep(1)
+            countdown.empty()
+            df=data_retrieval(context_id, command_id,cluster_id)
+            if df.shape[0]>0:
+                print("Result Retrieved Successfully  proceeding with destruction of execution context")
+            else:
+                print("Still waiting for command to execute, please try after sometime, proceeding with destruction of execution context")
+            
+            destroy_execution_context(cluster_id, context_id)
+            st.dataframe(df)
+                
+        except:
+            print("Some error has occured please check the flow")
+            destroy_execution_context(cluster_id, context_id)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
