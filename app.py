@@ -163,6 +163,14 @@ if OPEN_AI_API_KEY and db_schema and kpis:
         with st.chat_message("user"):
             st.write(query)
 
+    # Blocker to stop PI related queries.
+    if query:
+        if check_query(query) == False:
+            with st.chat_message("assistant"):
+                st.write("Sorry, I cannot digest PI information. Ask me something else?")
+                message = {"role": "assistant", "content": "Sorry, I cannot digest PI information. Ask me something else?" }
+                st.session_state.messages.append(message)
+
     if len(suggestions) > 0:
         part1, part2 = st.columns(2, gap="small")
         with part1: 
