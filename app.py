@@ -6,6 +6,7 @@ from openai import OpenAI
 from sql_to_data import execution_context_creation, sql_execution, data_retrieval, destroy_execution_context
 import time
 from sql_doctor import curated_sql
+from utils import s3_import, s3_export
 
 def text_extraction(file):
 
@@ -253,9 +254,11 @@ if len(st.session_state.sql) > 0:
         # Converting prompt and sql to dataframe.
         current_data = pd.DataFrame([[st.session_state.query, st.session_state.sql.replace("\n", " ")]], columns=["Prompt", "Query"])
         print(current_data)
-
+        file_name = "analytics/data/akhil/llm_training_data/training_data.csv"
         # Appending new dataframe to previous and saving to future training data.
-        training_data = pd.read_csv("training_data.csv")
-        pd.concat([training_data, current_data], axis=0)[["Prompt", "Query"]].to_csv("training_data.csv", index=False)
+        training_data = s3_import(file_name)
+        # training_data = pd.read_csv("training_data.csv")
+        df = pd.concat([training_data, current_data], axis=0)[["Prompt", "Query"]]
+        s3_export(df, file_name)
         st.session_state.sql = ""
         st.session_state.query = ""
