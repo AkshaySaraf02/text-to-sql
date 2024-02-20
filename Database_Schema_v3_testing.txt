@@ -11,6 +11,12 @@
     "context": "Stores sales and billing information. Each row corresponds to a unique bill, with details such as user ID, bill ID, amount, line item quantity, and dim_event_date_id is primary key for date table",
     "keywords": "bills, txns, transactions, invoices, purchase"
   },
+    {
+    "table_name": "bill_lineitems",
+    "columns": ["dim_event_user_id", "bill_id", "item_code", "quantity", "dim_event_date_id", "line_item_amount"],
+    "context": "Stores lineitem level transation information. Each row corresponds to a unique lineitem, with details such as user ID, bill ID, line_item_amount, quantity, and dim_event_date_id is primary key for date table",
+    "keywords": "items, lineitems, products, articles"
+  },
   {
     "table_name": "date",
     "columns": ["date_id", "month", "year", "quarter", "date"],
@@ -19,8 +25,8 @@
   },
   {
     "table_name": "inventory_items",
-    "columns": ["item_code", "category"],
-    "context": "Stores information about each inventory item or product, such as item code and category. Helpful for understanding the products available in the brand.",
+    "columns": ["item_code", "cat_group"],
+    "context": "Stores information about each inventory item or product, such as item code and cat_group (product category). Helpful for understanding the products available in the brand.",
     "keywords": "product, item, category, group" 
   },
   {
@@ -52,6 +58,6 @@
     "table_name": "points",
     "columns": ["allocated_points","awarded_ref_id","bill_id","bill_lineitem_id","bill_number","deducted_points","deduction_currency_value","dim_awarded_date_id","dim_awarded_expiry_date_id","dim_awarded_points_promotion_id","dim_awarded_program_id","dim_awarded_zone_till_id","dim_category_id","dim_deduction_type_id","dim_event_date_id","dim_event_program_id","dim_event_time_id","dim_event_user_id","dim_event_zone_till_id","dim_expiry_date_id","dim_expiry_time_id","dim_latest_updated_date_id","dim_latest_updated_time_id","dim_old_category_id","dim_points_promotion_id","dim_redemption_program_id","event_id","redemption_bill_id","redemption_bill_number","dim_points_event_type_id","dim_points_awarded_type_id"],
     "context": "Stores log of points information. This is an event (allocation, redemption, expiry, etc.) level table.",
-    "keywords": "points, loyalty, active points, redemption, allocation, expiry, ROI, extra sales,"
+    "keywords": "points, loyalty, active points, redemption, allocation, expiry, ROI, extra sales"
   }
 ]
