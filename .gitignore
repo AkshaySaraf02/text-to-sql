@@ -1,3 +1,4 @@
 config.py
 testing.py
 secrets.toml
+/.streamlit/secrets.toml
