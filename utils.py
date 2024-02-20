@@ -13,8 +13,9 @@ def s3_export(df, file_name):
 
     key = file_name
     bucket='reon.etl-data.sg'
-
     response = session.put_object(Body=csv_buffer.getvalue(),Bucket=bucket,Key=key)
+    print(response)
+    # print(f'File uploaded to {bucket}.')
     return response
 
 
@@ -34,4 +35,6 @@ def s3_import(file_name):
 
     # Read the file content to a pandas DataFrame
     data = pd.read_csv(StringIO(obj['Body'].read().decode('utf-8')))
+    if data.shape[0] > 0:
+        print("Training Data imported Sucessfully")
     return data
