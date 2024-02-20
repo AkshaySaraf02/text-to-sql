@@ -40,10 +40,8 @@ def s3_import(file_name):
     return data
 
 def check_personal_information(query):
-    # Regular expression for a basic email pattern
     email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    # Regular expression for a basic mobile phone number pattern (this will vary greatly by country)
-    # This is a simplistic pattern; you might need to adjust it to the specific format you expect
+
     phone_pattern = r'\b(\+?\d{1,3}[\s-]?)?\(?\d{2,4}\)?[\s-]?\d{3,4}[\s-]?\d{3,4}\b'
 
 
@@ -59,11 +57,3 @@ def check_query(query):
         return False
     else:
         return True
-
-
-# Example usage
-example_string = 'This is a test string with an email example@example.com in it.'
-print(check_query(example_string)) # Should print False
-
-example_string2 = 'This is a clean string without any emails or phone numbers.'
-print(check_query(example_string2)) # Should print True
