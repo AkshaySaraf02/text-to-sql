@@ -29,6 +29,7 @@ def generate(formatted_tables, needed_kpis, query, required_dbs):
     model = gpt_engine, # have to make this GPT-4
     messages=[{"role": "system", "content": f"""
     
+        You are Spark SQL Expert, based on the database schema info and KPI information from user generate a sql (Spark SQL) query.
         You are Spark SQL Expert, based on the database schema info and KPI information from user generate a Spark SQL query.
         Understand the context given for each schema and KPI before calculating to better understand the requirement.
         It is not necessary to use all the tables, only use the ones you think are required. Any column you dont recognize you must for sure understand from KPI info given below and calculate based on that only.
@@ -39,6 +40,10 @@ def generate(formatted_tables, needed_kpis, query, required_dbs):
                 Database schema: [{formatted_tables}],
                 KPIs data: {needed_kpis}
         
+        Important rules to follow while generating the query:
+            1. Query should be strictly a Spark SQL Query.
+            1. Make sure that all tables have aliases and all columns have prefixes of aliases of tables they are extracted from, to avoid ambiguous column issues.
+            3. Do not consider dim_event_date_id column as date, it is just identifier for a particular date, Instead use date column from date table for date operations. 
         
         Output format:
         Spark SQL Query
@@ -114,6 +119,9 @@ if "sql" and "query" not in st.session_state:
 if "required_dbs" not in st.session_state:
     st.session_state.required_dbs = []
 
+if "context_id" not in st.session_state:
+    st.session_state.context_id = ""
+
 if "messages" not in st.session_state.keys():
     st.session_state.messages = [{"role": "assistant", "content": "Hey! Can I help you with any data request?"}]
 
@@ -146,6 +154,9 @@ suggestions = []
 # Enable User's input when all credentials are uploaded.
 if OPEN_AI_API_KEY and db_schema and kpis:
     if query := st.chat_input("Enter your prompt"):
+        print("FROM THE TOP")
+        if st.session_state.context_id != "":
+            destroy_execution_context(st.secrets.databricks.cluster_id, context_id=st.session_state.context_id)
         st.session_state.messages.append({"role": "user", "content": query})
         cosine_similarity_scores(query, sample_codes, threshold=10, output_list=suggestions, matching_key="context", name_key="name")
         with st.chat_message("user"):
@@ -236,6 +247,7 @@ if OPEN_AI_API_KEY and db_schema and kpis:
         try:
             cluster_id= st.secrets.databricks.cluster_id
             context_id=execution_context_creation()
+            st.session_state.context_id = context_id
             command_id=sql_execution(sql_query, context_id, cluster_id)
             print("Waiting for result retrieval...")
             countdown = st.empty()
@@ -256,6 +268,7 @@ if OPEN_AI_API_KEY and db_schema and kpis:
         except:
             print("Some error has occured please check the flow")
             destroy_execution_context(cluster_id, context_id)
+            st.session_state.context_id = ""
 
 
 
