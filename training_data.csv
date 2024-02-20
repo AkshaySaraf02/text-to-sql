@@ -9,3 +9,4 @@ SHow me concept wise region wise city wise total bills and sales," SELECT     z.
 Slab wise sales," SELECT u.slab_name, SUM(b.bill_amount) AS total_sales FROM users u JOIN bill_summary b ON u.user_id = b.dim_event_user_id GROUP BY u.slab_name  "
 slab wise sales," SELECT      u.slab_name,      SUM(b.bill_amount) AS total_sales FROM      users u JOIN      bill_summary b ON u.user_id = b.dim_event_user_id GROUP BY      u.slab_name;  "
 slab wise sales," SELECT u.slab_name, SUM(b.bill_amount) AS total_sales FROM users u JOIN bill_summary b ON u.user_id = b.dim_event_user_id GROUP BY u.slab_name  "
+total sales for PLATINUM slab customers, SELECT SUM(b.bill_amount) AS total_sales FROM bill_summary b JOIN users u ON b.dim_event_user_id = u.user_id WHERE u.slab_name = 'PLATINUM';  
