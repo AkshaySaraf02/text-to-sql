@@ -46,6 +46,12 @@
     "table_name": "response_bill_summary",
     "columns": ["dim_event_user_id","bill_id","redeemed_points","total_lineitem_qty","bill_amount","dim_campaign_group_id","dim_event_zone_till_id","dim_event_date_id", "dim_campaign_id", "dim_communication_channel_id"],
     "context": "Stores log of campaign response transactions made by customer. This is a transactional level table. Each transaction is associated with the campaign for which a user responded by making this transaction. ",
-    "keywords": "performance, campaign, campaign+report, respon,"
+    "keywords": "performance, campaign, campaign+report, response,"
+  },
+    {
+    "table_name": "points",
+    "columns": ["allocated_points","awarded_ref_id","bill_id","bill_lineitem_id","bill_number","deducted_points","deduction_currency_value","dim_awarded_date_id","dim_awarded_expiry_date_id","dim_awarded_points_promotion_id","dim_awarded_program_id","dim_awarded_zone_till_id","dim_category_id","dim_deduction_type_id","dim_event_date_id","dim_event_program_id","dim_event_time_id","dim_event_user_id","dim_event_zone_till_id","dim_expiry_date_id","dim_expiry_time_id","dim_latest_updated_date_id","dim_latest_updated_time_id","dim_old_category_id","dim_points_promotion_id","dim_redemption_program_id","event_id","redemption_bill_id","redemption_bill_number","dim_points_event_type_id","dim_points_awarded_type_id"],
+    "context": "Stores log of points information. This is an event (allocation, redemption, expiry, etc.) level table.",
+    "keywords": "points, loyalty, active points, redemption, allocation, expiry, ROI, extra sales,"
   }
 ]
