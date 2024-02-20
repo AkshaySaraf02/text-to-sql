@@ -6,7 +6,7 @@ from openai import OpenAI
 from sql_to_data import execution_context_creation, sql_execution, data_retrieval, destroy_execution_context
 import time
 from sql_doctor import curated_sql
-from utils import s3_import, s3_export
+from utils import s3_import, s3_export, check_query
 
 def text_extraction(file):
 
@@ -153,7 +153,7 @@ suggestions = []
 
 # Enable User's input when all credentials are uploaded.
 if OPEN_AI_API_KEY and db_schema and kpis:
-    if query := st.chat_input("Enter your prompt"):
+    if query := st.chat_input("Enter your prompt"):        
         print("FROM THE TOP")
         if st.session_state.context_id != "":
             destroy_execution_context(st.secrets.databricks.cluster_id, context_id=st.session_state.context_id)

@@ -12,4 +12,5 @@ def get_org_id(input_org):
 def curated_sql(sql, input_org = 'Blackberrys'):
     org_id = get_org_id(input_org)
     curated_sql = f'use read_api_{org_id};' + sql
+    curated_sql = curated_sql.lower()
     return curated_sql
