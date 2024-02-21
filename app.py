@@ -3,7 +3,7 @@ import pandas as pd
 from cosine_similarity import cosine_similarity_scores
 import PyPDF2 as pdf
 from openai import OpenAI
-from sql_to_data import execution_context_creation, sql_execution, data_retrieval, destroy_execution_context
+from sql_to_data import execution_context_creation, sql_execution, data_retrieval, trigger_retrieval_loop, destroy_execution_context
 import time
 from sql_doctor import curated_sql
 from utils import s3_import, s3_export, check_query
@@ -260,12 +260,14 @@ if OPEN_AI_API_KEY and db_schema and kpis:
             command_id=sql_execution(sql_query, context_id, cluster_id)
             print("Waiting for result retrieval...")
             countdown = st.empty()
-            for i in range(20,0,-1):
+            for i in range(5,0,-1):
                 print("{:2d}".format(i), end="\r", flush=True)
                 countdown.text(f"Please wait {i} seconds for the data.")
                 time.sleep(1)
             countdown.empty()
-            df=data_retrieval(context_id, command_id,cluster_id)
+
+            df=trigger_retrieval_loop(context_id, command_id, cluster_id)
+            # df=data_retrieval(context_id, command_id,cluster_id)
             if df.shape[0]>0:
                 print("Result Retrieved Successfully  proceeding with destruction of execution context")
             else:
