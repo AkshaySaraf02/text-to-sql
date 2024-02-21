@@ -105,6 +105,12 @@ def data_retrieval(context_id, command_id,cluster_id):
         result = response.json()
         status = result.get('status', {})
         results = result.get('results', {})
+        
+        # Convert to JSON string with indentation
+        json_view = json.dumps(result, indent=4, sort_keys=True)
+
+        # Print the formatted JSON
+        print("Result JSON: \n", json_view)
 
         print(f"Command Status for Command ID {command_id}:")
         #print(json.dumps(status, indent=2))
