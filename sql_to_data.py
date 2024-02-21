@@ -129,6 +129,7 @@ def data_retrieval(context_id, command_id,cluster_id):
             print("\nResults not available yet. The command may still be running.")
     else:
         print(f"Error: {response.status_code}, {response.text}")
+        return None
 
 
 
@@ -137,13 +138,23 @@ def trigger_retrieval_loop(context_id, command_id, cluster_id):
     cluster_id= st.secrets.databricks.cluster_id
     timeout_seconds = 300  # Timeout after 5 minutes (5 * 60 seconds)
     start_time = time.time()
+    max_iterations = 10  # Temporary safety limit 
+    iteration_count = 0
 
     while True:
         try:
             print("Attempting Data Retrieval")
-            df = data_retrieval(context_id, command_id, cluster_id)
-            if df is not None:
-                return df  # Return the DataFrame when results are available
+            result = data_retrieval(context_id, command_id, cluster_id)  # Get result
+
+            # Check for errors
+            if result is None:  
+                print("Error occurred during data retrieval.") 
+            elif result.get('resultType') == 'error':  
+                error_details = result.get('cause') or result.get('summary')
+                print(f"Error occurred: {error_details}")
+            elif result is not None:  # Check if 'df' was successfully created 
+                return result
+
         except Exception as e:
             print(f"Error during data retrieval: {e}")
 
@@ -152,6 +163,11 @@ def trigger_retrieval_loop(context_id, command_id, cluster_id):
         elapsed_time = time.time() - start_time
         if elapsed_time > timeout_seconds:
             print("Didn't complete in time")
+            return None
+        
+        iteration_count += 1
+        if iteration_count >= max_iterations:
+            print("Reached maximum iterations. Potential issue with retrieval.")
             return None
 
 
