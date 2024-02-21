@@ -132,6 +132,30 @@ def data_retrieval(context_id, command_id,cluster_id):
 
 
 
+def trigger_retrieval_loop(context_id, command_id, cluster_id):
+    api_token = st.secrets.databricks.api_token
+    cluster_id= st.secrets.databricks.cluster_id
+    timeout_seconds = 300  # Timeout after 5 minutes (5 * 60 seconds)
+    start_time = time.time()
+
+    while True:
+        try:
+            print("Attempting Data Retrieval")
+            df = data_retrieval(context_id, command_id, cluster_id)
+            if df is not None:
+                return df  # Return the DataFrame when results are available
+        except Exception as e:
+            print(f"Error during data retrieval: {e}")
+
+        time.sleep(2)  # Wait for 2 seconds
+
+        elapsed_time = time.time() - start_time
+        if elapsed_time > timeout_seconds:
+            print("Didn't complete in time")
+            return None
+
+
+
 def destroy_execution_context(cluster_id, context_id):
     # Databricks REST API endpoint for deleting an execution context
     workspace_url = "https://capillary-notebook-sgcrm.cloud.databricks.com"
