@@ -68,7 +68,7 @@ def check_query(query):
 def check_data_for_PI(df):
 
     # Simplified regular expressions
-    mobile_regex = r'\b(\+?\d{1,3}[\s-]?)?\(?\d{2,4}\)?[\s-]?\d{3,4}[\s-]?\d{3,4}\b'  # Adjust for your country's mobile patterns
+    mobile_regex = r"^(?:\+91|91)?\s?[6-9]\d{9}$"  # tailored for Indian Mobiles
     email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
 
     has_mobile = False

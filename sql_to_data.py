@@ -153,7 +153,7 @@ def trigger_retrieval_loop(context_id, command_id, cluster_id):
                 return None 
         
             elif result is not None:  
-                df = result["data"]
+                df = result["data"].astype(str)
                 return df 
 
         except Exception as e:
