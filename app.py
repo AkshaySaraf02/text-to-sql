@@ -45,6 +45,8 @@ def generate(formatted_tables, needed_kpis, query, required_dbs):
             1. Make sure that all tables have aliases and all columns have prefixes of aliases of tables they are extracted from, to avoid ambiguous column issues.
             3. Do not consider dim_event_date_id column as date, it is just identifier for a particular date, Instead use date column from date table for date operations.
             4. While taking specific column matching information, always match it like this: lower(slab_name) = "platinum". This removes manual error caused by incorrect case input
+            5. dim_event_user_id < 0 signifies records of loyalty transactions. all users with dim_event_user_id > 0 are loyalty customers.
+            6. Never use date.month or date.year type syntax. It doesn't work in Spark SQL. Keep it like month(date) or year(date).
         
         Output format:
         Spark SQL Query
