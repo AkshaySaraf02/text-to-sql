@@ -140,7 +140,7 @@ def trigger_retrieval_loop(context_id, command_id, cluster_id):
     cluster_id = st.secrets.databricks.cluster_id
     timeout_seconds = 300  # Timeout after 5 minutes (5 * 60 seconds)
     start_time = time.time()
-    max_iterations = 10  # Temporary safety limit
+    max_iterations = 50  # Temporary safety limit
 
     iteration_count = 0
     while True:
