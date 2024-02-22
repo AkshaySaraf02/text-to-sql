@@ -3,6 +3,11 @@ import pandas as pd
 from io import StringIO
 import streamlit as st
 import re
+import pandas as pd
+from ftplib import *
+import io
+import csv
+from datetime import datetime
 
 def s3_export(df, file_name):
     session = boto3.client('s3',
@@ -81,3 +86,27 @@ def check_data_for_PI(df):
                 # email_columns.append(col)
     print("PI Information in  Data? ", has_mobile or has_email)
     return has_mobile or has_email
+
+def f3_export(df):
+    try:
+        now = datetime.now()
+        formatted_datetime = now.strftime("%Y_%m_%d_%H_%M_%S")
+
+        ftp = FTP('data.capillarydata.com')
+        ftp.set_pasv(True)
+        ftp.login(st.secrets.ftp.username, st.secrets.ftp.password)
+        ftp.cwd('/Data_Import/text_to_sql/Data_Exports')
+        #converting to file like object  df can be replaced by whatever dataframe name you give for the query
+        buffer=io.StringIO()
+        df.to_csv(buffer,index=False)
+        text = buffer.getvalue()
+        bio = io.BytesIO(str.encode(text))
+
+        #Do not remove STOR  its a keyword
+        ftp.storbinary('STOR data_export_{}.csv'.format(formatted_datetime), bio)
+        #This is essential to close open ports and prevent hacking into your ftp account
+        ftp.quit()
+        return True
+    except Exception as e:
+        print(f"Error during FTP Export: {e}")
+        return False
