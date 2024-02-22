@@ -6,7 +6,7 @@ from openai import OpenAI
 from sql_to_data import execution_context_creation, sql_execution, data_retrieval, trigger_retrieval_loop, destroy_execution_context
 import time
 from sql_doctor import curated_sql
-from utils import s3_import, s3_export, check_query
+from utils import s3_import, s3_export, check_query, check_data_for_PI
 
 def text_extraction(file):
 
@@ -274,7 +274,13 @@ if OPEN_AI_API_KEY and db_schema and kpis:
                 print("Still waiting for command to execute, please try after sometime, proceeding with destruction of execution context")
             
             destroy_execution_context(cluster_id, context_id)
-            st.dataframe(df)
+            if check_data_for_PI(df) == False:
+                st.dataframe(df)
+            elif check_data_for_PI(df) == True:
+                with st.chat_message("assistant"):
+                    st.write("Cannot show data as it contains PI information")
+                    message = {"role": "assistant", "content": "Sorry, I cannot digest PI information. Ask me something else?" }
+                    st.session_state.messages.append(message)
                 
         except:
             print("Some error has occured please check the flow")
