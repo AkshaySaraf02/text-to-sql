@@ -112,48 +112,49 @@ def data_retrieval(context_id, command_id,cluster_id):
         # Print the formatted JSON
         print("Result JSON: \n", json_view)
 
-        print(f"Command Status for Command ID {command_id}:")
-        #print(json.dumps(status, indent=2))
+        if response.status_code == 200:
+            result = response.json()
 
-        if results:
-            #print("\nResults:")
-            #print(json.dumps(results, indent=2))
-            # Extract column names from the schema
-            column_names = [column['name'] for column in results['schema']]
-            # Extract data values from the 'data' field
-            data_values = results['data']
-            # Create a Pandas DataFrame
-            df = pd.DataFrame(data_values, columns=column_names)
-            return(df)
+            if results:
+                if results["resultType"] == 'error':
+                    return {"success": False, "message": "Error in code"}  # Return a specific value to signal error
+
+                # Create DataFrame
+                column_names = [column['name'] for column in results['schema']]
+                data_values = results['data']
+                df = pd.DataFrame(data_values, columns=column_names)
+                return {"success": True, "data": df}  # Return the DataFrame directly
+
+            else:
+                print("Results not available yet. The command may still be running.")
+                return None  #  Return None to indicate no DataFrame yet
+
         else:
-            print("\nResults not available yet. The command may still be running.")
-    else:
-        print(f"Error: {response.status_code}, {response.text}")
-        return None
+            print(f"Error: {response.status_code}, {response.text}")
+            return None
 
 
 
 def trigger_retrieval_loop(context_id, command_id, cluster_id):
     api_token = st.secrets.databricks.api_token
-    cluster_id= st.secrets.databricks.cluster_id
+    cluster_id = st.secrets.databricks.cluster_id
     timeout_seconds = 300  # Timeout after 5 minutes (5 * 60 seconds)
     start_time = time.time()
-    max_iterations = 10  # Temporary safety limit 
-    iteration_count = 0
+    max_iterations = 10  # Temporary safety limit
 
+    iteration_count = 0
     while True:
         try:
             print("Attempting Data Retrieval")
-            result = data_retrieval(context_id, command_id, cluster_id)  # Get result
+            result = data_retrieval(context_id, command_id, cluster_id)  
 
-            # Check for errors
-            if result is None:  
-                print("Error occurred during data retrieval.") 
-            elif result.get('resultType') == 'error':  
-                error_details = result.get('cause') or result.get('summary')
-                print(f"Error occurred: {error_details}")
-            elif result is not None:  # Check if 'df' was successfully created 
-                return result
+            if not result["success"]:
+                print(f"Error encountered: {result['message']}")
+                return None 
+        
+            elif result is not None:  
+                df = result["data"]
+                return df 
 
         except Exception as e:
             print(f"Error during data retrieval: {e}")
@@ -164,11 +165,12 @@ def trigger_retrieval_loop(context_id, command_id, cluster_id):
         if elapsed_time > timeout_seconds:
             print("Didn't complete in time")
             return None
-        
+
         iteration_count += 1
         if iteration_count >= max_iterations:
             print("Reached maximum iterations. Potential issue with retrieval.")
             return None
+
 
 
 

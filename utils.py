@@ -61,19 +61,6 @@ def check_query(query):
 
 
 def check_data_for_PI(df):
-    """
-    Checks if a DataFrame contains mobile or email data in any of its columns.
-
-    Args:
-        df (pandas.DataFrame): The DataFrame to check.
-
-    Returns:
-        dict: A dictionary containing the following keys:
-            - 'has_mobile': True if mobile data is found, False otherwise.
-            - 'has_email': True if email data is found, False otherwise.
-            - 'mobile_columns': List of columns containing mobile data.
-            - 'email_columns': List of columns containing email data.
-    """
 
     # Simplified regular expressions
     mobile_regex = r'\b(\+?\d{1,3}[\s-]?)?\(?\d{2,4}\)?[\s-]?\d{3,4}[\s-]?\d{3,4}\b'  # Adjust for your country's mobile patterns
@@ -81,21 +68,16 @@ def check_data_for_PI(df):
 
     has_mobile = False
     has_email = False
-    mobile_columns = []
-    email_columns = []
+    # mobile_columns = []
+    # email_columns = []
 
     for col in df.columns:
         if df[col].dtype == 'object':  # Check only object type columns
             if any(df[col].str.contains(mobile_regex)):
                 has_mobile = True
-                mobile_columns.append(col)
+                # mobile_columns.append(col)
             if any(df[col].str.contains(email_regex)):
                 has_email = True
-                email_columns.append(col)
-
-    return {
-        'has_mobile': has_mobile,
-        'has_email': has_email,
-        'mobile_columns': mobile_columns,
-        'email_columns': email_columns
-    }
+                # email_columns.append(col)
+    print("PI Information in  Data? ", has_mobile or has_email)
+    return has_mobile or has_email
