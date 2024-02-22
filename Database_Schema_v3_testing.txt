@@ -8,8 +8,8 @@
   {
     "table_name": "bill_summary",
     "columns": ["dim_event_user_id", "bill_id", "bill_amount", "line_item_quantity", "dim_event_date_id", "redeemed_points", "dim_event_zone_till_id"],
-    "context": "Stores sales and billing information. Each row corresponds to a unique bill, with details such as user ID, bill ID, amount, line item quantity, and dim_event_date_id is primary key for date table",
-    "keywords": "bills, txns, transactions, invoices, purchase"
+    "context": "Stores sales , transaction sales and billing information. Each row corresponds to a unique bill, with details such as user ID, bill ID, amount, line item quantity, and dim_event_date_id is primary key for date table",
+    "keywords": "bills, txns, transactions, invoices, purchase, shop, shopped, sale, sold, customers"
   },
     {
     "table_name": "bill_lineitems",
